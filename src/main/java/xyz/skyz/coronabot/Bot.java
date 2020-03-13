@@ -59,7 +59,7 @@ public class Bot {
     public void start() {
         registerCommand(new AlertCommand(this));
         registerCommand(new HelpCommand(this));
-        /*registerCommand(new MoveConspirancyCommand(this));
+        /*registerCommand(new MoveConspiracyCommand(this));
         registerCommand(new MoveJokeCommand(this));
         registerCommand(new MoveMarketCommand(this));
         registerCommand(new MovePoliticsCommand(this));*/

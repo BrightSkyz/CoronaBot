@@ -9,9 +9,9 @@ import xyz.skyz.coronabot.Command;
 import java.util.Arrays;
 import java.util.List;
 
-public class MoveConspirancyCommand extends Command {
+public class MoveConspiracyCommand extends Command {
 
-    public MoveConspirancyCommand(Bot bot) {
+    public MoveConspiracyCommand(Bot bot) {
         super(bot, "moveconspirancy", "moveconspirancy", "Send a premade message.", Arrays.asList("movetheory", "movespeculation"), false);
     }
 
