@@ -1,8 +1,10 @@
 package xyz.skyz.coronabot.commands;
 
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.PrivateChannel;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.exceptions.ContextException;
 import xyz.skyz.coronabot.Bot;
@@ -58,6 +60,21 @@ public class SuspendCommand extends Command {
             return;
         }
         try {
+            if (event.getGuild().getSelfMember().hasPermission(Permission.VOICE_MOVE_OTHERS, Permission.VOICE_CONNECT) &&
+                    event.getGuild().getSelfMember().canInteract(mentionedMember) &&
+                    mentionedMember.getVoiceState().inVoiceChannel()) {
+                VoiceChannel voiceChannel;
+                try {
+                    voiceChannel = event.getGuild().createVoiceChannel("Voice Kick")
+                            .setParent(mentionedMember.getVoiceState().getChannel().getParent()).reason("Kick from voice channel").complete();
+
+                    event.getGuild().moveVoiceMember(mentionedMember, voiceChannel).complete();
+                    voiceChannel.delete().reason("Kick from voice channel").complete();
+                } catch (Exception e) {
+                    // Ignore
+                }
+            }
+
             Role suspendedRole = event.getGuild().getRolesByName("Suspended", true).get(0);
             event.getGuild().addRoleToMember(mentionedMember, suspendedRole).queue();
             Role defaultRole = event.getGuild().getRolesByName("Default", true).get(0);
