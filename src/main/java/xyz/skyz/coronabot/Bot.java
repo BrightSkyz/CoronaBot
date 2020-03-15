@@ -64,6 +64,9 @@ public class Bot {
         registerCommand(new MoveJokeCommand(this));
         registerCommand(new MoveMarketCommand(this));
         registerCommand(new MovePoliticsCommand(this));*/
+        /*registerCommand(new OldSuspendCommand(this));
+        registerCommand(new OldUnsuspendCommand(this));*/
+        registerCommand(new StuckChannelCommand(this));
         registerCommand(new SuspendCommand(this));
         registerCommand(new UnsuspendCommand(this));
         try {

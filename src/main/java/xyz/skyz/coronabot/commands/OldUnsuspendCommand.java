@@ -9,9 +9,9 @@ import xyz.skyz.coronabot.Command;
 import java.util.Arrays;
 import java.util.List;
 
-public class UnsuspendCommand extends Command {
+public class OldUnsuspendCommand extends Command {
 
-    public UnsuspendCommand(Bot bot) {
+    public OldUnsuspendCommand(Bot bot) {
         super(bot, "unsuspend", "unsuspend [mention]", "Un-suspend a user.", Arrays.asList(), false);
     }
 
@@ -34,7 +34,7 @@ public class UnsuspendCommand extends Command {
             return;
         }
         if (args.size() != 1 || event.getMessage().getMentionedMembers().size() != 1) {
-            sendMessageBack(event, getBot().createEmbedBuilder("Un-suspend", "Usage: >unsuspend [mention]", null));
+            sendMessageBack(event, getBot().createEmbedBuilder("Un-suspend", "Usage: !unsuspend [mention]", null));
             return;
         }
         Member mentionedMember = event.getMessage().getMentionedMembers().get(0);
@@ -56,9 +56,6 @@ public class UnsuspendCommand extends Command {
             return;
         }
         try {
-            if (event.getTextChannel().getName().startsWith("q-")) {
-                event.getTextChannel().delete().queue();
-            }
             Role defaultRole = event.getGuild().getRolesByName("Default", true).get(0);
             event.getGuild().addRoleToMember(mentionedMember, defaultRole).queue();
             Role suspendedRole = event.getGuild().getRolesByName("Suspended", true).get(0);

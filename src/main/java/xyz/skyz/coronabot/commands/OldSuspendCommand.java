@@ -1,17 +1,21 @@
 package xyz.skyz.coronabot.commands;
 
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.PrivateChannel;
+import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.exceptions.ContextException;
 import xyz.skyz.coronabot.Bot;
 import xyz.skyz.coronabot.Command;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class SuspendCommand extends Command {
+public class OldSuspendCommand extends Command {
 
-    public SuspendCommand(Bot bot) {
+    public OldSuspendCommand(Bot bot) {
         super(bot, "suspend", "suspend [mention]", "Suspend a user.", Arrays.asList(), false);
     }
 
@@ -34,7 +38,7 @@ public class SuspendCommand extends Command {
             return;
         }
         if (args.size() != 1 || event.getMessage().getMentionedMembers().size() != 1) {
-            sendMessageBack(event, getBot().createEmbedBuilder("Suspend", "Usage: >suspend [mention]", "Uh-oh."));
+            sendMessageBack(event, getBot().createEmbedBuilder("Suspend", "Usage: !suspend [mention]", "Uh-oh."));
             return;
         }
         Member mentionedMember = event.getMessage().getMentionedMembers().get(0);
@@ -71,35 +75,16 @@ public class SuspendCommand extends Command {
                 }
             }
 
-            Category quarantineCategory = null;
-            if (event.getGuild().getCategoriesByName("Quarantine", true).size() == 0) {
-                sendMessageBack(event, getBot().createEmbedBuilder("Suspend", "The category doesn't exist.", "Uh-oh."));
-                return;
-            } else {
-                quarantineCategory = event.getGuild().getCategoriesByName("Quarantine", true).get(0);
-            }
-            String randomString = getBot().hash((Math.random() * 100) + "abc").substring(0, 5);
-            TextChannel quarantineChannel = event.getGuild().createTextChannel("q-" + randomString).setParent(quarantineCategory).complete();
-            quarantineChannel.getManager().putPermissionOverride(mentionedMember, Arrays.asList(Permission.VIEW_CHANNEL), Arrays.asList()).complete();
-
             Role suspendedRole = event.getGuild().getRolesByName("Suspended", true).get(0);
             event.getGuild().addRoleToMember(mentionedMember, suspendedRole).queue();
             Role defaultRole = event.getGuild().getRolesByName("Default", true).get(0);
             event.getGuild().removeRoleFromMember(mentionedMember, defaultRole).queue();
             sendMessageBack(event, getBot().createEmbedBuilder("Suspend", "The person has been suspended.", "Uh-oh."));
 
-            if (event.getGuild().getTextChannelsByName("staff", true).size() != 0) {
-                TextChannel staffChannel = event.getGuild().getTextChannelsByName("staff", true).get(0);
-                if (staffChannel.canTalk()) {
-                    String staffDescription = event.getMember().getAsMention() + " has suspended the user " + mentionedMember.getAsMention() + ".";
-                    staffChannel.sendMessage(getBot().createEmbedBuilder("Suspend", staffDescription, null).build()).queue();
-                }
-            }
-
             mentionedMember.getUser().openPrivateChannel().queue((privateChannel -> {
                 privateChannel.sendMessage(getBot().createEmbedBuilder("Suspend",
                         "You have been Suspended by one of our Discord staff.\n" +
-                                "To appeal your suspension/talk about your suspension please go to the quarantine channel.", null).build()).queue();
+                                "To appeal your suspension/talk about your suspension please go to the #quarantine channel.", null).build()).queue();
             }));
         } catch (Exception e) {
             e.printStackTrace();
