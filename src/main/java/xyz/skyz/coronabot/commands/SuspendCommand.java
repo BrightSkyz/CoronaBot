@@ -12,7 +12,7 @@ import java.util.List;
 public class SuspendCommand extends Command {
 
     public SuspendCommand(Bot bot) {
-        super(bot, "suspend", "suspend [mention]", "Suspend a user.", Arrays.asList(), false);
+        super(bot, "suspend", "suspend [mention] <reason>", "Suspend a user.", Arrays.asList(), false);
     }
 
     @Override
@@ -33,13 +33,28 @@ public class SuspendCommand extends Command {
         if (!hasRole) {
             return;
         }
-        if (args.size() != 1 || event.getMessage().getMentionedMembers().size() != 1) {
-            sendMessageBack(event, getBot().createEmbedBuilder("Suspend", "Usage: >suspend [mention]", "Uh-oh."));
+        if (args.size() < 1) {
+            sendMessageBack(event, getBot().createEmbedBuilder("Suspend", "Usage: >suspend [mention] <reason>", "Uh-oh."));
             return;
         }
-        Member mentionedMember = event.getMessage().getMentionedMembers().get(0);
+        Member mentionedMember = null;
+        if (event.getMessage().getMentionedMembers().size() < 1) {
+            try {
+                mentionedMember = event.getGuild().getMemberById(args.get(0));
+            } catch (Exception e) {
+                sendMessageBack(event, getBot().createEmbedBuilder("Suspend", "Invalid user.", "Uh-oh."));
+                return;
+            }
+        } else {
+            mentionedMember = event.getMessage().getMentionedMembers().get(0);
+        }
+        if (mentionedMember == null) {
+            sendMessageBack(event, getBot().createEmbedBuilder("Suspend", "Invalid user.", "Uh-oh."));
+            return;
+        }
         List<Role> mentionedMemberRoles = mentionedMember.getRoles();
         boolean isSuspendable = false;
+        boolean hasDefaultRole = false;
         for (Role role : mentionedMemberRoles) {
             for (String staffRole : getBot().getStaffRoles()) {
                 if (role.getName().equalsIgnoreCase(staffRole)) {
@@ -47,14 +62,14 @@ public class SuspendCommand extends Command {
                     return;
                 }
                 if (role.getName().equalsIgnoreCase("Default")) {
-                    isSuspendable = true;
+                    hasDefaultRole = true;
                 }
             }
         }
-        if (!isSuspendable) {
+        /*if (!isSuspendable) {
             sendMessageBack(event, getBot().createEmbedBuilder("Suspend", "The person specified doesn't have the default role.", "Uh-oh."));
             return;
-        }
+        }*/
         try {
             if (event.getGuild().getSelfMember().hasPermission(Permission.VOICE_MOVE_OTHERS, Permission.VOICE_CONNECT) &&
                     event.getGuild().getSelfMember().canInteract(mentionedMember) &&
@@ -82,10 +97,31 @@ public class SuspendCommand extends Command {
             TextChannel quarantineChannel = event.getGuild().createTextChannel("q-" + randomString).setParent(quarantineCategory).complete();
             quarantineChannel.getManager().putPermissionOverride(mentionedMember, Arrays.asList(Permission.VIEW_CHANNEL), Arrays.asList()).complete();
 
+            String reason = "";
+            if (args.size() > 1) {
+                boolean firstArg = true;
+                for (String arg : args) {
+                    if (firstArg) {
+                        firstArg = false;
+                    } else {
+                        reason += arg + " ";
+                    }
+                }
+            }
+            String description = "User suspended: " + mentionedMember.getAsMention() + "\n";
+            if (reason.equalsIgnoreCase("")) {
+                description += "Reason: None";
+            } else {
+                description += "Reason: " + reason;
+            }
+            quarantineChannel.sendMessage(getBot().createEmbedBuilder("Suspend", description, null).build()).queue();
+
             Role suspendedRole = event.getGuild().getRolesByName("Suspended", true).get(0);
             event.getGuild().addRoleToMember(mentionedMember, suspendedRole).queue();
-            Role defaultRole = event.getGuild().getRolesByName("Default", true).get(0);
-            event.getGuild().removeRoleFromMember(mentionedMember, defaultRole).queue();
+            if (hasDefaultRole) {
+                Role defaultRole = event.getGuild().getRolesByName("Default", true).get(0);
+                event.getGuild().removeRoleFromMember(mentionedMember, defaultRole).queue();
+            }
             sendMessageBack(event, getBot().createEmbedBuilder("Suspend", "The person has been suspended.", "Uh-oh."));
 
             if (event.getGuild().getTextChannelsByName("staff", true).size() != 0) {

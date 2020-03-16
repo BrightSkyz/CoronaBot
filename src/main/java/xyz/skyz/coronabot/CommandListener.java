@@ -30,7 +30,9 @@ public class CommandListener extends ListenerAdapter {
                         cmd = arg.replace(">", "");
                         first = false;
                     } else {
-                        args.add(arg);
+                        if (!arg.equalsIgnoreCase("")) {
+                            args.add(arg);
+                        }
                     }
                 }
             } else {

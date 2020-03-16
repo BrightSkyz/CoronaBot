@@ -63,8 +63,10 @@ public class UnsuspendCommand extends Command {
             event.getGuild().addRoleToMember(mentionedMember, defaultRole).queue();
             Role suspendedRole = event.getGuild().getRolesByName("Suspended", true).get(0);
             event.getGuild().removeRoleFromMember(mentionedMember, suspendedRole).queue();
-            sendMessageBack(event, getBot().createEmbedBuilder("Un-Suspend", "The person has been un-suspended.", null));
-        } catch (Exception e) {
+            if (!event.getTextChannel().getName().startsWith("q-")) {
+                sendMessageBack(event, getBot().createEmbedBuilder("Un-Suspend", "The person has been un-suspended.", null));
+            }
+            } catch (Exception e) {
             sendMessageBack(event, getBot().createEmbedBuilder("Un-Suspend", "An error occurred.", null));
         }
     }
